@@ -4,7 +4,7 @@ import client_lib
 print ("\n")
 client_lib.instructions()
 
-print ("<instructions> - lets you see the instructions again\n")
+client_socket = client_lib.create_socket()
 
 while True:
    
@@ -13,15 +13,13 @@ while True:
         
     if "<write>" in msg:
 
+        # error check the message
         while not client_lib.check_message(msg):
              msg = sys.stdin.readline()
         
-
-        new_file = False
         filename = msg.split()[1]
-        file = client_lib.open_file(filename, "a+")
 
-        print ("Write some text to the file...")
+        print ("Write some text...")
         print ("<end> to finish writing")
         client_lib.print_breaker()
 
@@ -36,13 +34,22 @@ while True:
 
         client_lib.print_breaker()
 
-        file.write(write_msg)
+        client_lib.send_write(client_socket, filename, "a+", write_msg)
+
+        #client_socket = client_lib.create_socket()
+        reply = client_socket.recv(1024)
+        reply = reply.decode()
+        print ("SERVER: " + reply)
+        #client_socket.close()
 
         print ("Text is saved to " + filename)
         print ("Exiting <write> mode...\n")
         
         
     if "<read>" in msg: 
+        while not client_lib.check_message(msg):
+             msg = sys.stdin.readline()
+
         filename = msg.split()[1]
         file = client_lib.open_file(filename, "r")
         if file != IOError:
@@ -53,5 +60,6 @@ while True:
         client_lib.instructions()
 
     else:
-        client_lib.instructions()        
+        if len(msg) > 1:
+            client_lib.instructions()     
 
