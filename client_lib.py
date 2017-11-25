@@ -1,29 +1,28 @@
 from socket import *
 import sys
 
-
-
-
 def create_socket():
+    # create client socket and return socket object
     serverName = 'localhost'
     serverPort = 12000
     s = socket(AF_INET, SOCK_STREAM)
     s.connect((serverName,serverPort))
     return s
 
-def send_write(client_socket, filename, RW, msg):
+def send_read_write(client_socket, filename, RW, msg):
 
+    # set up string to send
     send_msg = "FILENAME: \n" + filename + "\n" \
     + "READWRITE: \n" + RW + "\n" \
-    + "TEXT:" + msg + "\n"
-    
+    + "TEXT:" + msg
+
+    # sent the sting requesting a write to the file server
     client_socket.send(send_msg.encode())
-    #client_socket.close()
-    #print ("MESSAGE SENT!")
-    
+
 
 
 def instructions():
+    # instructions to the user
     print ("------------------- INSTRUCTIONS ----------------------")
     print ("<write> [filename] - write to file mode")
     print ("<end> - finish writing")

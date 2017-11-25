@@ -27,22 +27,18 @@ while True:
 
         while True:
             written = sys.stdin.readline()
-            if "<end>" in written:
+            if "<end>" in written:  # check if user wants to finish writing
                 break
             else: 
                 write_msg += written
 
         client_lib.print_breaker()
 
-        client_lib.send_write(client_socket, filename, "a+", write_msg)
+        client_lib.send_read_write(client_socket, filename, "a+", write_msg) # send text and filename to the fileserver
 
-        #client_socket = client_lib.create_socket()
         reply = client_socket.recv(1024)
         reply = reply.decode()
-        print ("SERVER: " + reply)
-        #client_socket.close()
-
-        print ("Text is saved to " + filename)
+        print (reply)
         print ("Exiting <write> mode...\n")
         
         
@@ -51,15 +47,14 @@ while True:
              msg = sys.stdin.readline()
 
         filename = msg.split()[1]
-        file = client_lib.open_file(filename, "r")
-        if file != IOError:
-            print (file.read())
+        #file = client_lib.open_file(filename, "r")
+        client_lib.send_read_write(client_socket, filename, "r", "READ")
+        reply = client_socket.recv(1024)
+        reply = reply.decode()
+        print (reply)
+        #if file != IOError:
+        #    print (file.read())
         
         
     if "<instructions>" in msg:
         client_lib.instructions()
-
-    else:
-        if len(msg) > 1:
-            client_lib.instructions()     
-
