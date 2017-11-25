@@ -4,7 +4,7 @@ import sys
 def create_socket():
     # create client socket and return socket object
     serverName = 'localhost'
-    serverPort = 12000
+    serverPort = 9090
     s = socket(AF_INET, SOCK_STREAM)
     s.connect((serverName,serverPort))
     return s
@@ -16,8 +16,13 @@ def send_read_write(client_socket, filename, RW, msg):
     + "READWRITE: \n" + RW + "\n" \
     + "TEXT:" + msg
 
-    # sent the sting requesting a write to the file server
+    # send the sting requesting a write to the file server
     client_socket.send(send_msg.encode())
+
+def send_DS(client_socket, filename):
+
+    # send the sting requesting a write to the file server
+    client_socket.send(filename.encode())
 
 
 

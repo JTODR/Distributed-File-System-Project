@@ -1,9 +1,10 @@
 # file server
 from socket import *
 
+serverAddr = "95.44.197.33"
 serverPort = 12000
 serverSocket = socket(AF_INET,SOCK_STREAM)
-serverSocket.bind(('', serverPort))
+serverSocket.bind((serverAddr, serverPort))
 serverSocket.listen(1)
 print ('The server is ready to receive')
 

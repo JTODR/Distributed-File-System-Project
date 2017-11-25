@@ -41,7 +41,7 @@ while True:
         print (reply)
         print ("Exiting <write> mode...\n")
         
-        
+
     if "<read>" in msg: 
         while not client_lib.check_message(msg):
              msg = sys.stdin.readline()
@@ -58,3 +58,11 @@ while True:
         
     if "<instructions>" in msg:
         client_lib.instructions()
+
+
+    if "<sendDS>" in msg:
+        filename = msg.split()[1]
+        client_lib.send_DS(client_socket, filename)
+        reply = client_socket.recv(1024)
+        reply = reply.decode()
+        print (reply)
