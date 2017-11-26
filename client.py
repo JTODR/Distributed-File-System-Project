@@ -2,22 +2,23 @@ import sys
 import client_lib
 import os
 import time
+from datetime import datetime
 
 print ("\n")
 client_lib.instructions()
-
+client_id = str(datetime.now())
 
 while True:
    
-    msg = sys.stdin.readline()
+    client_input = sys.stdin.readline()
         
-    if "<write>" in msg:
+    if "<write>" in client_input:
 
         # error check the message
-        while not client_lib.check_message(msg):
-             msg = sys.stdin.readline()
+        while not client_lib.check_message(client_input):
+             client_input = sys.stdin.readline()
         
-        filename = msg.split()[1]
+        filename = client_input.split()[1]
 
         # ------ INFO FROM DS ------
         client_socket = client_lib.create_socket()  # create socket to directory service
@@ -36,12 +37,12 @@ while True:
 
             # ------ LOCKING ------
             client_socket = client_lib.create_socket()
-            grant_lock = client_lib.lock_unlock_file(client_socket, file_path, "lock")
+            grant_lock = client_lib.lock_unlock_file(client_socket, client_id, file_path, "lock")
             client_socket.close()
             while grant_lock == "file_not_granted":
                 print("File not granted, polling again...")
                 client_socket = client_lib.create_socket()
-                grant_lock = client_lib.lock_unlock_file(client_socket, file_path, "lock")
+                grant_lock = client_lib.lock_unlock_file(client_socket, client_id, file_path, "lock")
                 client_socket.close()
                 time.sleep(0.5)     # wait 0.5 sec if lock not available and request it again
 
@@ -51,20 +52,20 @@ while True:
             print ("Write some text...")
             print ("<end> to finish writing")
             client_lib.print_breaker()
-            write_msg = ""
+            write_client_input = ""
             while True:
                 written = sys.stdin.readline()
                 if "<end>" in written:  # check if user wants to finish writing
                     break
                 else: 
-                    write_msg += written
+                    write_client_input += written
             client_lib.print_breaker()
 
             
 
             # ------ WRITING TO FS ------
             client_socket = client_lib.create_socket()
-            client_lib.send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "a+", write_msg) # send text and filename to the fileserver
+            client_lib.send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "a+", write_client_input) # send text and filename to the fileserver
             #print ("SENT FOR WRITE")
             reply_FS = client_socket.recv(1024)
             reply_FS = reply_FS.decode()
@@ -73,7 +74,7 @@ while True:
 
             # ------ UNLOCKING ------
             client_socket = client_lib.create_socket()
-            reply_unlock = client_lib.lock_unlock_file(client_socket, file_path, "unlock")
+            reply_unlock = client_lib.lock_unlock_file(client_socket, client_id, file_path, "unlock")
             client_socket.close()
             print (reply_unlock)
 
@@ -84,11 +85,11 @@ while True:
         client_socket.close()
         
 
-    if "<read>" in msg: 
-        while not client_lib.check_message(msg):    # error check the input
-             msg = sys.stdin.readline()
+    if "<read>" in client_input: 
+        while not client_lib.check_message(client_input):    # error check the input
+             client_input = sys.stdin.readline()
 
-        filename = msg.split()[1]   # get file name from user
+        filename = client_input.split()[1]   # get file name from user
 
         client_socket = client_lib.create_socket()  # create socket to directory service
         reply_DS = client_lib.look_for_DS(client_socket, filename)  # send file name to directory service
@@ -114,8 +115,10 @@ while True:
         print("Exiting <read> mode...\n")
         client_socket.close()
 
-        
-        
-    if "<instructions>" in msg:
+             
+    if "<instructions>" in client_input:
         client_lib.instructions()
 
+    if "<quit>" in client_input:
+        print("Exiting application...")
+        sys.exit()

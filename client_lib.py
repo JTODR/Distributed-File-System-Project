@@ -27,16 +27,16 @@ def look_for_DS(client_socket, filename):
     #print (reply)
     return reply
 
-def lock_unlock_file(client_socket, file_path, lock_or_unlock):
+def lock_unlock_file(client_socket, client_id, file_path, lock_or_unlock):
 
     serverName = 'localhost'
     serverPort = 4040   # port of directory service
     client_socket.connect((serverName,serverPort))
 
     if lock_or_unlock == "lock":
-        msg = "_1_:" + file_path  # 1 = lock the file
+        msg = client_id + "_1_:" + file_path  # 1 = lock the file
     elif lock_or_unlock == "unlock":
-        msg = "_2_:" + file_path   # 2 = unlock the file
+        msg = client_id + "_2_:" + file_path   # 2 = unlock the file
 
     # send the string requesting file info to directory service
     client_socket.send(msg.encode())
@@ -53,6 +53,7 @@ def instructions():
     print ("<end> - finish writing")
     print ("<read> [filename] - read a file in your current directory")
     print ("<instructions> - lets you see the instructions again")
+    print ("<quit> - exits the application")
     print ("-------------------------------------------------------\n")
 
 def print_breaker():

@@ -1,5 +1,9 @@
 from socket import *
+from collections import defaultdict		# for dictionary list 
+from collections import deque
 import sys
+
+#client_id = 0 	# assign ids to clients when they request a locked file
 
 serverAddr = "localhost"
 serverPort = 4040
@@ -11,8 +15,7 @@ print ('LOCKING SERVICE is ready to receive')
 
 
 def check_if_unlocked(file_path, filepath_locked_map):
-# NEED TO ADD ALL FILES TO DICTIONARY FIRST!!! or something like that
-	
+
 	
 	if file_path in filepath_locked_map:		# check for existance of filepath as a key in the dictionary
 		if filepath_locked_map[file_path] == "unlocked":
@@ -30,6 +33,8 @@ def check_if_unlocked(file_path, filepath_locked_map):
 def main():
 
 	filepath_locked_map = {}
+	filepath_clients_map = defaultdict(list)
+	waiting_client = False
 
 
 	while 1:
@@ -38,9 +43,11 @@ def main():
 		recv_msg = connectionSocket.recv(1024)
 		recv_msg = recv_msg.decode()
 
-		print("\n" + recv_msg)
+		#print("\n" + recv_msg)
 
 		if "_1_:" in recv_msg:
+			waiting_client = False
+			client_id = recv_msg.split("_1_:")[0]
 			file_path = recv_msg.split("_1_:")[1]
 			
 			unlocked = check_if_unlocked(file_path, filepath_locked_map)
@@ -51,12 +58,32 @@ def main():
 				connectionSocket.send(response.encode())
 			else:
 				response = "file_not_granted"
+
+				
+				print("--- Wait dict ---")
+				if file_path in filepath_clients_map:			
+					for file_path,values in filepath_clients_map.items():
+						for v in values:
+							if v == client_id:
+								waiting_client = True
+								
+							print(file_path," : ",v)
+							#if waiting_client == False:
+							#	filepath_clients_map[file_path].append(client_id)	# append client to lists of clients waiting for the file
+					
+				print("------------------")			
+				
+				if waiting_client == False:
+					filepath_clients_map[file_path].append(client_id)	# append client to lists of clients waiting for the file
+
+
 				print("SENT: " + response)
 				connectionSocket.send(response.encode())
 
 		elif "_2_:" in recv_msg:
+			client_id = recv_msg.split("_2_:")[0]
 			file_path = recv_msg.split("_2_:")[1]
-			#file_path.replace(" ", "")	# remove any spaces in the filepath, to use as dict key
+
 			filepath_locked_map[file_path] = "unlocked"
 			response = "File unlocked..."
 			connectionSocket.send(response.encode())
