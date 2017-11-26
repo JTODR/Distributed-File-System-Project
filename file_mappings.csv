@@ -1,2 +1,7 @@
 user_filename,actual_filename,path,server_addr,server_port
-file1,file1.txt,C:/Users/Joseph/……,95.44.197.33,12000
+file1,file1.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo,localhost,12000
+file2,file2.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo,localhost,12000
+file3,file3.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo,localhost,12000
+file4,file4.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo,localhost,12000
+file5,file5.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo,localhost,12000
+file6,file6.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo,localhost,12000

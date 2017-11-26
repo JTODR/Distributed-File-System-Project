@@ -5,9 +5,9 @@ from socket import *
 
 serverPort = 9090
 serverSocket = socket(AF_INET,SOCK_STREAM)
-serverSocket.bind(('', serverPort))
+serverSocket.bind(('localhost', serverPort))
 serverSocket.listen(1)
-print ('The server is ready to receive')
+print ('DIRECTORY SERVICE is ready to receive')
 
 def check_csv(filename):
 
@@ -30,8 +30,8 @@ def check_csv(filename):
 				print("file_path: " + file_path)
 				print("server_addr: " + server_addr)
 				print("server_port: " + server_port)
-				return actual_filename + "|" + file_path + "|" + server_addr + "|" + server_port 
-
+				return actual_filename + "|" + file_path + "|" + server_addr + "|" + server_port
+	return None
 
 
 
@@ -40,17 +40,21 @@ def main():
 
 	while 1:
 		connectionSocket, addr = serverSocket.accept()
-		while 1:
-			response = ""
-			recv_msg = connectionSocket.recv(1024)
-			filename = recv_msg.decode()
+		#while 1:
+		response = ""
+		recv_msg = connectionSocket.recv(1024)
+		filename = recv_msg.decode()
 
-			#print("RECEIVED: " + filename)
+		#print("RECEIVED: " + filename)
 
-			response = check_csv(filename)
-
-			#print("RESPONSE: " + response)
-			connectionSocket.send(response.encode())
+		response = check_csv(filename)
+		if response is not None:
+			response = str(response)
+			print("RESPONSE: " + response)
+			print("\n")
+		else:
+			response = "FILE_DOES_NOT_EXIST"
+		connectionSocket.send(response.encode())
 			
 			#break
 		connectionSocket.close()
