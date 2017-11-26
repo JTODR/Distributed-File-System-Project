@@ -6,7 +6,6 @@ print ("\n")
 client_lib.instructions()
 
 #client_socket = client_lib.create_socket()
-prev_DS = False
 
 while True:
    
@@ -31,10 +30,6 @@ while True:
             pathname_DS = reply_DS.split('|')[1]
             fileserverIP_DS = reply_DS.split('|')[2]
             fileserverPORT_DS = reply_DS.split('|')[3]
-            #print(filename_DS)
-            #print(pathname_DS)
-            #print(fileserverIP_DS)
-            #print(fileserverPORT_DS)
 
         print ("Write some text...")
         print ("<end> to finish writing")
@@ -61,45 +56,37 @@ while True:
         
 
     if "<read>" in msg: 
-        while not client_lib.check_message(msg):
+        while not client_lib.check_message(msg):    # error check the input
              msg = sys.stdin.readline()
 
-        filename = msg.split()[1]
-        #file = client_lib.open_file(filename, "r")
-        client_lib.send_read_write(client_socket, filename, "r", "READ")
-        reply = client_socket.recv(1024)
+        filename = msg.split()[1]   # get file name from user
+
+        client_socket = client_lib.create_socket()  # create socket to directory service
+        reply_DS = client_lib.look_for_DS(client_socket, filename)  # send file name to directory service
+        client_socket.close()   # close directory service connection
+
+        if reply_DS == "FILE_DOES_NOT_EXIST":
+            print(filename + " does not exist on a fileserver")
+        else:
+            # parse info received from the directory service
+            filename_DS = reply_DS.split('|')[0]
+            pathname_DS = reply_DS.split('|')[1]
+            fileserverIP_DS = reply_DS.split('|')[2]
+            fileserverPORT_DS = reply_DS.split('|')[3]
+
+        client_socket = client_lib.create_socket()  # create socket to file server
+        file_path = os.path.join(pathname_DS, filename_DS)  # join the file to the filepath
+        client_lib.send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "r", "READ") # send filepath and read to file server
+
+        reply = client_socket.recv(1024)    # receive reply from file server
         reply = reply.decode()
         print (reply)
-        #if file != IOError:
-        #    print (file.read())
+
+        print("Exiting <read> mode...\n")
+        client_socket.close()
+
         
         
     if "<instructions>" in msg:
         client_lib.instructions()
 
-
-    #if "<lookfor>" in msg:
-     #   if prev_DS == False:
-     #       serverName = 'localhost'
-     #       serverPort = 9090
-     #       client_socket.connect((serverName,serverPort))
-
-     #   filename = msg.split()[1]
-
-      #  reply_DS = client_lib.send_DS(client_socket, filename)
-        #print (reply_DS)
-      #  if reply_DS == "FILE_DOES_NOT_EXIST":
-       #     print(filename + " does not exist on a fileserver")
-      #  else:
-      #      filename_DS = reply_DS.split('|')[0]
-      #      pathname_DS = reply_DS.split('|')[1]
-      #      fileserverIP_DS = reply_DS.split('|')[2]
-      #      fileserverPORT_DS = reply_DS.split('|')[3]
-       #     print(filename_DS)
-       #     print(pathname_DS)
-       #     print(fileserverIP_DS)
-        #    print(fileserverPORT_DS)
-#
-       # prev_DS = True
-        #client_socket.close()
-        
