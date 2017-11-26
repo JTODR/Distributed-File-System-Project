@@ -49,14 +49,14 @@ while 1:
 			response = read_write(filepath, RW, text)
 
 			if response == "Success":
-				reply = "File successfully written to"
+				reply = "File successfully written to..."
 				connectionSocket.send(reply.encode())
 				#print ("Sent: " + reply)
 
 			elif response is not IOError and RW == "r":
 				reply = "------------------------\n" \
 				+ response \
-				+ "------------------------\n" 
+				+ "------------------------" 
 				connectionSocket.send(reply.encode())
 				#print ("Sent: " + reply)
 

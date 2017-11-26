@@ -1,6 +1,7 @@
 import sys
 import client_lib
 import os
+import time
 
 print ("\n")
 client_lib.instructions()
@@ -19,9 +20,11 @@ while True:
              msg = sys.stdin.readline()
         
         filename = msg.split()[1]
-        client_socket = client_lib.create_socket()
-        reply_DS = client_lib.look_for_DS(client_socket, filename)
-        client_socket.close()
+
+        # ------ INFO FROM DS ------
+        client_socket = client_lib.create_socket()  # create socket to directory service
+        reply_DS = client_lib.look_for_DS(client_socket, filename)  # request the file info from directory service
+        client_socket.close()   # close the connection 
 
         if reply_DS == "FILE_DOES_NOT_EXIST":
             print(filename + " does not exist on a fileserver")
@@ -31,26 +34,48 @@ while True:
             fileserverIP_DS = reply_DS.split('|')[2]
             fileserverPORT_DS = reply_DS.split('|')[3]
 
-        print ("Write some text...")
-        print ("<end> to finish writing")
-        client_lib.print_breaker()
-        write_msg = ""
-        while True:
-            written = sys.stdin.readline()
-            if "<end>" in written:  # check if user wants to finish writing
-                break
-            else: 
-                write_msg += written
-        client_lib.print_breaker()
+            file_path = os.path.join(pathname_DS, filename_DS)  # attach filename to filepath
+
+            print ("Write some text...")
+            print ("<end> to finish writing")
+            client_lib.print_breaker()
+            write_msg = ""
+            while True:
+                written = sys.stdin.readline()
+                if "<end>" in written:  # check if user wants to finish writing
+                    break
+                else: 
+                    write_msg += written
+            client_lib.print_breaker()
+
+            # ------ LOCKING ------
+            client_socket = client_lib.create_socket()
+            grant_lock = client_lib.lock_file(client_socket, file_path)
+
+            while grant_lock == "file_not_granted":
+                print("Stuck in loop")
+                grant_lock = client_lib.lock_file(client_socket, file_path)
+                time.sleep.sec(0.5)     # wait 0.5 sec if lock not available and request it again
+            client_socket.close()
+            print("You are granted the file...")
+
+            # ------ WRITING TO FS ------
+            client_socket = client_lib.create_socket()
+            client_lib.send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "a+", write_msg) # send text and filename to the fileserver
+            reply_FS = client_socket.recv(1024)
+            reply_FS = reply_FS.decode()
+            client_socket.close()
+            print (reply_FS)
+
+            # ------ UNLOCKING ------
+            client_socket = client_lib.create_socket()
+            reply_unlock = client_lib.unlock_file(client_socket, file_path)
+            client_socket.close()
+            print (reply_unlock)
 
 
-        client_socket = client_lib.create_socket()
-        file_path = os.path.join(pathname_DS, filename_DS)
-        client_lib.send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "a+", write_msg) # send text and filename to the fileserver
 
-        reply = client_socket.recv(1024)
-        reply = reply.decode()
-        print (reply)
+            
         print ("Exiting <write> mode...\n")
         client_socket.close()
         
@@ -78,9 +103,9 @@ while True:
         file_path = os.path.join(pathname_DS, filename_DS)  # join the file to the filepath
         client_lib.send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "r", "READ") # send filepath and read to file server
 
-        reply = client_socket.recv(1024)    # receive reply from file server
-        reply = reply.decode()
-        print (reply)
+        reply_FS = client_socket.recv(1024)    # receive reply from file server
+        reply_FS = reply_FS.decode()
+        print (reply_FS)
 
         print("Exiting <read> mode...\n")
         client_socket.close()

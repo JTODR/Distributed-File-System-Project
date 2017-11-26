@@ -26,6 +26,36 @@ def look_for_DS(client_socket, filename):
     #print (reply)
     return reply
 
+def lock_file(client_socket, file_path):
+
+    serverName = 'localhost'
+    serverPort = 4040   # port of directory service
+    client_socket.connect((serverName,serverPort))
+
+    msg = "_1_:" + file_path  # 1 = lock the file
+
+    # send the string requesting file info to directory service
+    client_socket.send(msg.encode())
+    reply = client_socket.recv(1024)
+    reply = reply.decode()
+
+    return reply
+
+def unlock_file(client_socket, file_path):
+
+    serverName = 'localhost'
+    serverPort = 4040   # port of directory service
+    client_socket.connect((serverName,serverPort))
+
+    msg = "_2_:" + file_path   # 2 = unlock the file
+
+    # send the string requesting file info to directory service
+    client_socket.send(msg.encode())
+    reply = client_socket.recv(1024)
+    reply = reply.decode()
+
+    return reply
+  
 
 def instructions():
     # instructions to the user
