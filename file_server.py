@@ -5,7 +5,7 @@ serverAddr = "localhost"
 serverPort = 12000
 serverSocket = socket(AF_INET,SOCK_STREAM)
 serverSocket.bind((serverAddr, serverPort))
-serverSocket.listen(1)
+serverSocket.listen(10)
 print ('FILE SERVER is ready to receive')
 
 def read_write(filepath, RW, text):
@@ -31,10 +31,11 @@ def read_write(filepath, RW, text):
 
 
 while 1:
-	connectionSocket, addr = serverSocket.accept()
+	#connectionSocket, addr = serverSocket.accept()
 	while 1:
 		response = ""
 		connectionSocket, addr = serverSocket.accept()
+
 		recv_msg = connectionSocket.recv(1024)
 		recv_msg = recv_msg.decode()
 
@@ -68,4 +69,3 @@ while 1:
 		
 		#break
 	connectionSocket.close()
-

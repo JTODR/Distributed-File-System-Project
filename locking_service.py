@@ -5,7 +5,7 @@ serverAddr = "localhost"
 serverPort = 4040
 serverSocket = socket(AF_INET,SOCK_STREAM)
 serverSocket.bind((serverAddr, serverPort))
-serverSocket.listen(1)
+serverSocket.listen(10)
 print ('LOCKING SERVICE is ready to receive')
 
 
@@ -31,7 +31,7 @@ def main():
 
 	filepath_locked_map = {}
 
-	
+
 	while 1:
 		connectionSocket, addr = serverSocket.accept()
 		response = ""

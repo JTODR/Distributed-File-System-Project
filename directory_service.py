@@ -6,7 +6,7 @@ from socket import *
 serverPort = 9090
 serverSocket = socket(AF_INET,SOCK_STREAM)
 serverSocket.bind(('localhost', serverPort))
-serverSocket.listen(1)
+serverSocket.listen(10)
 print ('DIRECTORY SERVICE is ready to receive')
 
 def check_csv(filename):
