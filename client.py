@@ -39,12 +39,12 @@ while True:
             client_socket = client_lib.create_socket()
             grant_lock = client_lib.lock_unlock_file(client_socket, client_id, file_path, "lock")
             client_socket.close()
-            while grant_lock == "file_not_granted":
+            while grant_lock != "file_granted":
                 print("File not granted, polling again...")
                 client_socket = client_lib.create_socket()
                 grant_lock = client_lib.lock_unlock_file(client_socket, client_id, file_path, "lock")
                 client_socket.close()
-                time.sleep(0.5)     # wait 0.5 sec if lock not available and request it again
+                time.sleep(0.1)     # wait 0.5 sec if lock not available and request it again
 
             print("You are granted the file...")
 
