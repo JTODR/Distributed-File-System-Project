@@ -102,10 +102,13 @@ def handle_write(filename, client_id, file_version_map):
         client_socket.close()
 
         print (reply_FS.split("...")[0])    # split version num from success message and print message
-        version_num = reply_FS.split("...")[1] 
-        file_version_map[file_path] = version_num     # set the version num for the file
+        #version_num = reply_FS.split("...")[1] 
+        #file_version_map[file_path] = version_num     # set the version num for the file
 
-        print (file_path + " ---- VERSION_NUM: " + file_version_map[file_path])
+        #print (file_path + " ---- VERSION_NUM: " + file_version_map[file_path])
+
+        # ------ CACHING ON WRITE ------
+        cache_write(filename_DS, write_client_input)
 
         # ------ UNLOCKING ------
         client_socket = create_socket()
@@ -114,6 +117,17 @@ def handle_write(filename, client_id, file_version_map):
         print (reply_unlock)
 
         return True
+
+def cache_write(filename_DS, write_client_input):
+    curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
+    cache_file = curr_path + "\\client_cache\\" + filename_DS       # append a the cache folder and filename to the path
+    
+    os.makedirs(os.path.dirname(cache_file), exist_ok=True)         # create the directory/file
+
+    with open(cache_file, "a+") as f:        # write to the cached file
+        f.write(write_client_input)
+
+    print (filename_DS + " successfully cached...")
 
 def handle_read(filename, file_version_map):
     client_socket = create_socket()  # create socket to directory service

@@ -1,6 +1,5 @@
 # file server
 from socket import *
-import os.path
 
 server_addr = "localhost"
 server_port = 12000
@@ -21,7 +20,7 @@ def read_write(filepath, RW, text, file_version_map):
 			pass
 
 	elif RW == "a+":	# if write request
-		#if os.stat(filepath).st_size == 0:		# check if file is empty
+
 		if filepath not in file_version_map:
 			file_version_map[filepath] = 0		# if empty (ie. if its a new file), set the version no. to 0
 		else:
@@ -67,6 +66,7 @@ def main():
 			print ("Filepath: " + filepath)
 			RW = recv_msg.split("|")[1]			# whether its a read or write
 			print ("RW: " + RW)
+			
 			text = recv_msg.split("|")[2]		# the text to be written (this text is "READ" for a read and is ignored)
 			print ("TEXT: " + text)
 
