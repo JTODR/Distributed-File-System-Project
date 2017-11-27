@@ -1,8 +1,6 @@
 from socket import *
 from collections import defaultdict		# for dictionary list 
-from collections import deque
 import sys
-import copy
 
 #client_id = 0 	# assign ids to clients when they request a locked file
 
@@ -77,7 +75,7 @@ def main():
 									filepath_clients_map[file_path].remove(v)
 									filepath_locked_map[file_path] = "locked"
 									response = "file_granted"
-									print("CLASH! " + "COUNT IS: " + str(count_temp))
+									#print("CLASH! " + "COUNT IS: " + str(count_temp))
 									print("SENT: " + response +" ---- " + client_id)
 									connectionSocket.send(response.encode())
 								count_temp += 1
@@ -100,7 +98,7 @@ def main():
 						filepath_clients_map[file_path].append(client_id)	# append client to lists of clients waiting for the file
 
 
-					print("SENT: " + response)
+					print("SENT: " + response + client_id)
 					connectionSocket.send(response.encode())
 
 			elif "_2_:" in recv_msg:
