@@ -2,6 +2,7 @@ from socket import *
 import sys
 import os
 import time
+import os.path
 
 
 def create_socket():
@@ -48,7 +49,7 @@ def lock_unlock_file(client_socket, client_id, file_path, lock_or_unlock):
 
     return reply
 
-def handle_write(filename, client_id):
+def handle_write(filename, client_id, file_version_map):
     # ------ INFO FROM DS ------
     client_socket = create_socket()  # create socket to directory service
     reply_DS = look_for_DS(client_socket, filename)  # request the file info from directory service
@@ -83,11 +84,11 @@ def handle_write(filename, client_id):
         print_breaker()
         write_client_input = ""
         while True:
-            written = sys.stdin.readline()
-            if "<end>" in written:  # check if user wants to finish writing
+            client_input = sys.stdin.readline()
+            if "<end>" in client_input:  # check if user wants to finish writing
                 break
             else: 
-                write_client_input += written
+                write_client_input += client_input
         print_breaker()
 
         
@@ -99,7 +100,12 @@ def handle_write(filename, client_id):
         reply_FS = client_socket.recv(1024)
         reply_FS = reply_FS.decode()
         client_socket.close()
-        print (reply_FS)
+
+        print (reply_FS.split("...")[0])    # split version num from success message and print message
+        version_num = reply_FS.split("...")[1] 
+        file_version_map[file_path] = version_num     # set the version num for the file
+
+        print (file_path + " ---- VERSION_NUM: " + file_version_map[file_path])
 
         # ------ UNLOCKING ------
         client_socket = create_socket()
@@ -109,7 +115,7 @@ def handle_write(filename, client_id):
 
         return True
 
-def handle_read(filename):
+def handle_read(filename, file_version_map):
     client_socket = create_socket()  # create socket to directory service
     reply_DS = look_for_DS(client_socket, filename)  # send file name to directory service
     client_socket.close()   # close directory service connection
@@ -127,10 +133,21 @@ def handle_read(filename):
         file_path = os.path.join(pathname_DS, filename_DS)  # join the file to the filepath
         send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "r", "READ") # send filepath and read to file server
 
-        reply_FS = client_socket.recv(1024)    # receive reply from file server
+        reply_FS = client_socket.recv(1024)    # receive reply from file server, this will be the text from the file
         reply_FS = reply_FS.decode()
         client_socket.close()
-        print (reply_FS)
+
+        if reply_FS != "File does not exist\n":
+            print_breaker()
+            print (reply_FS)
+            print_breaker()
+
+            # ------ CACHING ------         NEED TO DO VERSIONING ON FS BEFORE CHECKING VERSIONS HERE
+            cache_file = open(filename_DS, "w")
+            cache_file.write(reply_FS)
+            print(filename_DS + " locally cached...")
+
+
 
 def instructions():
     # instructions to the user

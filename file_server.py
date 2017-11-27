@@ -1,5 +1,6 @@
 # file server
 from socket import *
+import os.path
 
 server_addr = "localhost"
 server_port = 12000
@@ -8,45 +9,50 @@ server_socket.bind((server_addr, server_port))
 server_socket.listen(10)
 print ('FILE SERVER is ready to receive...')
 
-def read_write(filepath, RW, text):
-    
-    if RW == "r":	# if read request
-        # check if file to read from exists in the directory
-        try:
-            file = open(filepath, RW)	
-            text_in_file = file.read()		# read the file's text into a string
-            return text_in_file			
-        except IOError:				# IOError occurs when open(filepath,RW) cannot find the file requested
-            print (filepath + " does not exist in directory\n")
-            return IOError
-            pass
-  
-    elif RW == "a+":	# if write request
-        file = open(filepath, RW)
-        file.write(text)	# write the text from the client to the file
-        return "Success"
+def read_write(filepath, RW, text, file_version_map):
+	if RW == "r":	# if read request
+		try:
+			file = open(filepath, RW)	
+			text_in_file = file.read()		# read the file's text into a string
+			return text_in_file			
+		except IOError:				# IOError occurs when open(filepath,RW) cannot find the file requested
+			print (filepath + " does not exist in directory\n")
+			return IOError
+			pass
+
+	elif RW == "a+":	# if write request
+		#if os.stat(filepath).st_size == 0:		# check if file is empty
+		if filepath not in file_version_map:
+			file_version_map[filepath] = 0		# if empty (ie. if its a new file), set the version no. to 0
+		else:
+			file_version_map[filepath] = file_version_map[filepath] + 1		# increment version no.
+
+		file = open(filepath, RW)
+		file.write(text)
+		print("FILE_VERSION: " + str(file_version_map[filepath]))
+		return ("Success", file_version_map[filepath])
 
 
 def send_client_reply(response, RW, connection_socket):
 
-	if response == "Success":
-		reply = "File successfully written to..."
+	if response[0] == "Success":
+		reply = "File successfully written to..." + str(response[1])
+		print("Sending file version " + str(response[1]))
 		connection_socket.send(reply.encode())
 		#print ("Sent: " + reply)
 
-	elif response is not IOError and RW == "r":
-		reply = "------------------------\n" \
-		+ response \
-		+ "------------------------" 
-		connection_socket.send(reply.encode())
+	elif response[0] is not IOError and RW == "r":
+		connection_socket.send(response.encode())
 		#print ("Sent: " + reply)
 
-	elif response is IOError: 
+	elif response[0] is IOError: 
 		reply = "File does not exist\n"
 		connection_socket.send(reply.encode())
 		#print ("Sent: " + reply)
     
 def main():
+
+	file_version_map = {}
 
 	while 1:
 		response = ""
@@ -64,7 +70,7 @@ def main():
 			text = recv_msg.split("|")[2]		# the text to be written (this text is "READ" for a read and is ignored)
 			print ("TEXT: " + text)
 
-			response = read_write(filepath, RW, text)	# perform the read/write and check if successful
+			response = read_write(filepath, RW, text, file_version_map)	# perform the read/write and check if successful
 			send_client_reply(response, RW, connection_socket)		# send back write successful message or send back text for client to read
 
 	connection_socket.close()

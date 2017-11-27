@@ -7,6 +7,7 @@ def main():
     print ("\n")
     client_lib.instructions()
     client_id = str(datetime.now())     # assign a client id, this will be used to in the locking service
+    file_version_map = {}
 
     while True:
        
@@ -17,7 +18,7 @@ def main():
                  client_input = sys.stdin.readline()
             
             filename = client_input.split()[1]      # get the filename from the input
-            client_lib.handle_write(filename, client_id)    # handle the write request
+            client_lib.handle_write(filename, client_id, file_version_map)    # handle the write request
             print ("Exiting <write> mode...\n")
             
 
@@ -26,7 +27,7 @@ def main():
                  client_input = sys.stdin.readline()
 
             filename = client_input.split()[1]   # get file name from the input
-            client_lib.handle_read(filename)        # handle the read request
+            client_lib.handle_read(filename, file_version_map)        # handle the read request 
             print("Exiting <read> mode...\n")
             
 
