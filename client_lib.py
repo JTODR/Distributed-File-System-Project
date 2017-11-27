@@ -9,14 +9,62 @@ def create_socket():
     s = socket(AF_INET, SOCK_STREAM)
     return s
 
-def send_read_write(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW, msg):
+def send_write(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW, file_version_map, msg):
+    if file_path not in file_version_map:
+        file_version_map[file_path] = 0
 
-    send_msg = file_path + "|" + RW + "|" + msg
+    elif RW != "r":
+        file_version_map[file_path] = file_version_map[file_path] + 1
+
+    send_msg = file_path + "|" + RW + "|" + msg 
+
+    print("Sending version: " + str(file_version_map[file_path]))
 
     # send the sting requesting a write to the file server
     client_socket.connect((fileserverIP_DS,fileserverPORT_DS))
     client_socket.send(send_msg.encode())
     #print ("SENT " + send_msg + " to " + str(fileserverIP_DS) + " " + str(fileserverPORT_DS))
+
+def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW, file_version_map, msg, filename_DS):
+    if file_path not in file_version_map:
+        file_version_map[file_path] = 0
+        print("File is empty...")
+        return True
+
+    send_msg = "CHECK_VERSION|" + file_path
+    client_socket1 = create_socket()
+    client_socket1.connect((fileserverIP_DS,fileserverPORT_DS))
+    client_socket1.send(send_msg.encode())
+    print ("Checking version...")
+    version_FS = client_socket1.recv(1024)    # receive file server version number
+    version_FS = version_FS.decode()
+    client_socket1.close()
+
+    if version_FS != str(file_version_map[file_path]):
+        print("Versions do not match...")
+        print("REQUESTING FILE FROM FILE SERVER...")
+        file_version_map[file_path] = version_FS 
+        send_msg = file_path + "|" + RW + "|" + msg    
+
+        #print("Sending version: " + str(file_version_map[file_path]))
+
+        # send the string requesting a read from the file server
+        client_socket.connect((fileserverIP_DS,fileserverPORT_DS))
+        client_socket.send(send_msg.encode())
+        #print ("SENT MSG: " + send_msg)
+        return False    # didn't go to cache - new version
+    else:
+        # read from cache
+        print("Versions match, reading from cache...")
+        curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
+        cache_file = curr_path + "\\client_cache\\" + filename_DS       # append the cache folder and filename to the path
+        with open(cache_file, "r") as f:        # read from the cached file
+            print_breaker()
+            print(f.read())
+            print_breaker()
+
+    return True     # went to cache
+
 
 def look_for_DS(client_socket, filename):
     serverName = 'localhost'
@@ -78,7 +126,7 @@ def handle_write(filename, client_id, file_version_map):
 
         print("You are granted the file...")
 
-        # ------ WRITING ------
+        # ------ ClIENT WRITING TEXT ------
         print ("Write some text...")
         print ("<end> to finish writing")
         print_breaker()
@@ -95,20 +143,22 @@ def handle_write(filename, client_id, file_version_map):
 
         # ------ WRITING TO FS ------
         client_socket = create_socket()
-        send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "a+", write_client_input) # send text and filename to the fileserver
+        send_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "a+", file_version_map, write_client_input) # send text and filename to the fileserver
         #print ("SENT FOR WRITE")
         reply_FS = client_socket.recv(1024)
         reply_FS = reply_FS.decode()
         client_socket.close()
 
         print (reply_FS.split("...")[0])    # split version num from success message and print message
-        #version_num = reply_FS.split("...")[1] 
-        #file_version_map[file_path] = version_num     # set the version num for the file
+        version_num = int(reply_FS.split("...")[1]) 
+        
+        if version_num != file_version_map[file_path]:
+            print("Server version no changed - updating client version no.")
+            file_version_map[file_path] = version_num
 
-        #print (file_path + " ---- VERSION_NUM: " + file_version_map[file_path])
 
-        # ------ CACHING ON WRITE ------
-        cache_write(filename_DS, write_client_input)
+        # ------ CACHING ------
+        cache_write(filename_DS, write_client_input, "a+")
 
         # ------ UNLOCKING ------
         client_socket = create_socket()
@@ -118,13 +168,13 @@ def handle_write(filename, client_id, file_version_map):
 
         return True
 
-def cache_write(filename_DS, write_client_input):
+def cache_write(filename_DS, write_client_input, RW):
     curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
-    cache_file = curr_path + "\\client_cache\\" + filename_DS       # append a the cache folder and filename to the path
+    cache_file = curr_path + "\\client_cache\\" + filename_DS       # append the cache folder and filename to the path
     
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)         # create the directory/file
 
-    with open(cache_file, "a+") as f:        # write to the cached file
+    with open(cache_file, RW) as f:        # write to the cached file
         f.write(write_client_input)
 
     print (filename_DS + " successfully cached...")
@@ -145,21 +195,19 @@ def handle_read(filename, file_version_map):
 
         client_socket = create_socket()  # create socket to file server
         file_path = os.path.join(pathname_DS, filename_DS)  # join the file to the filepath
-        send_read_write(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "r", "READ") # send filepath and read to file server
+        read_cache = send_read(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "r", file_version_map, "READ", filename_DS) # send filepath and read to file server
 
-        reply_FS = client_socket.recv(1024)    # receive reply from file server, this will be the text from the file
-        reply_FS = reply_FS.decode()
-        client_socket.close()
+        if not read_cache:
+            reply_FS = client_socket.recv(1024)    # receive reply from file server, this will be the text from the file
+            reply_FS = reply_FS.decode()
+            client_socket.close()
 
-        if reply_FS != "File does not exist\n":
-            print_breaker()
-            print (reply_FS)
-            print_breaker()
+            if reply_FS != "File does not exist\n":
+                print_breaker()
+                print (reply_FS)
+                print_breaker()
 
-            # ------ CACHING ------         NEED TO DO VERSIONING ON FS BEFORE CHECKING VERSIONS HERE
-            cache_file = open(filename_DS, "w")
-            cache_file.write(reply_FS)
-            print(filename_DS + " locally cached...")
+                cache_write(filename_DS, reply_FS, "w")  # update the cached file with the new version from the file server
 
 
 
