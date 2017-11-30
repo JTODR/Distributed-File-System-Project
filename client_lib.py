@@ -25,7 +25,7 @@ def send_write(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW
     client_socket.send(send_msg.encode())
     #print ("SENT " + send_msg + " to " + str(fileserverIP_DS) + " " + str(fileserverPORT_DS))
 
-def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW, file_version_map, msg, filename_DS):
+def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW, file_version_map, msg, filename_DS, client_id):
     if file_path not in file_version_map:
         file_version_map[file_path] = 0
         print("File is empty...")
@@ -43,7 +43,7 @@ def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW,
     if version_FS != str(file_version_map[file_path]):
         print("Versions do not match...")
         print("REQUESTING FILE FROM FILE SERVER...")
-        file_version_map[file_path] = version_FS 
+        file_version_map[file_path] = int(version_FS) 
         send_msg = file_path + "|" + RW + "|" + msg    
 
         #print("Sending version: " + str(file_version_map[file_path]))
@@ -56,12 +56,9 @@ def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW,
     else:
         # read from cache
         print("Versions match, reading from cache...")
-        curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
-        cache_file = curr_path + "\\client_cache\\" + filename_DS       # append the cache folder and filename to the path
-        with open(cache_file, "r") as f:        # read from the cached file
-            print_breaker()
-            print(f.read())
-            print_breaker()
+        cache(filename_DS, "READ", "r", client_id)
+    
+        
 
     return True     # went to cache
 
@@ -158,7 +155,7 @@ def handle_write(filename, client_id, file_version_map):
 
 
         # ------ CACHING ------
-        cache_write(filename_DS, write_client_input, "a+")
+        cache(filename_DS, write_client_input, "a+", client_id)
 
         # ------ UNLOCKING ------
         client_socket = create_socket()
@@ -168,18 +165,24 @@ def handle_write(filename, client_id, file_version_map):
 
         return True
 
-def cache_write(filename_DS, write_client_input, RW):
+def cache(filename_DS, write_client_input, RW, client_id):
     curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
-    cache_file = curr_path + "\\client_cache\\" + filename_DS       # append the cache folder and filename to the path
+    cache_file = curr_path + "\\client_cache" + client_id + "\\" + filename_DS       # append the cache folder and filename to the path
     
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)         # create the directory/file
 
-    with open(cache_file, RW) as f:        # write to the cached file
-        f.write(write_client_input)
+    if RW == "a+" or RW == "w":
+        with open(cache_file, RW) as f:        # write to the cached file
+            f.write(write_client_input)
+    else:
+        with open(cache_file, "r") as f:        # read from the cached file
+            print_breaker()
+            print(f.read())
+            print_breaker()
 
-    print (filename_DS + " successfully cached...")
+    
 
-def handle_read(filename, file_version_map):
+def handle_read(filename, file_version_map, client_id):
     client_socket = create_socket()  # create socket to directory service
     reply_DS = look_for_DS(client_socket, filename)  # send file name to directory service
     client_socket.close()   # close directory service connection
@@ -195,7 +198,7 @@ def handle_read(filename, file_version_map):
 
         client_socket = create_socket()  # create socket to file server
         file_path = os.path.join(pathname_DS, filename_DS)  # join the file to the filepath
-        read_cache = send_read(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "r", file_version_map, "READ", filename_DS) # send filepath and read to file server
+        read_cache = send_read(client_socket, fileserverIP_DS, int(fileserverPORT_DS), file_path, "r", file_version_map, "READ", filename_DS, client_id) # send filepath and read to file server
 
         if not read_cache:
             reply_FS = client_socket.recv(1024)    # receive reply from file server, this will be the text from the file
@@ -207,8 +210,8 @@ def handle_read(filename, file_version_map):
                 print (reply_FS)
                 print_breaker()
 
-                cache_write(filename_DS, reply_FS, "w")  # update the cached file with the new version from the file server
-
+                cache(filename_DS, reply_FS, "w", client_id)  # update the cached file with the new version from the file server
+                print (filename_DS + " successfully cached...")
 
 
 def instructions():

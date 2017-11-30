@@ -1,12 +1,14 @@
 import sys
 import client_lib
 from datetime import datetime
+from time import gmtime, strftime
 
 def main():
 
     print ("\n")
     client_lib.instructions()
-    client_id = str(datetime.now())     # assign a client id, this will be used to in the locking service
+    client_id = strftime("%Y%m%d%H%M%S", gmtime())
+    #client_id = str(datetime.now())     # assign a client id, this will be used to in the locking service
     file_version_map = {}
 
     while True:
@@ -27,7 +29,7 @@ def main():
                  client_input = sys.stdin.readline()
 
             filename = client_input.split()[1]   # get file name from the input
-            client_lib.handle_read(filename, file_version_map)        # handle the read request 
+            client_lib.handle_read(filename, file_version_map, client_id)        # handle the read request 
             print("Exiting <read> mode...\n")
             
 
