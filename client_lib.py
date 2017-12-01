@@ -214,12 +214,28 @@ def handle_read(filename, file_version_map, client_id):
                 print (filename_DS + " successfully cached...")
 
 
+def list_files():
+    serverName = 'localhost'
+    serverPort = 9090   # port of directory service
+    client_socket = create_socket()
+    client_socket.connect((serverName,serverPort))
+
+    msg = "LIST"
+    # send the string requesting file info to directory service
+    client_socket.send(msg.encode())
+    reply = client_socket.recv(1024)
+    reply = reply.decode()
+    client_socket.close()
+    print ("Listing files on directory server...")
+    print (reply)
+
 def instructions():
     # instructions to the user
     print ("------------------- INSTRUCTIONS ----------------------")
     print ("<write> [filename] - write to file mode")
     print ("<end> - finish writing")
     print ("<read> [filename] - read a file in your current directory")
+    print ("<list> - lists all existing files")
     print ("<instructions> - lets you see the instructions again")
     print ("<quit> - exits the application")
     print ("-------------------------------------------------------\n")

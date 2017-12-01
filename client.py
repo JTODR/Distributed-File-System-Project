@@ -31,7 +31,9 @@ def main():
             filename = client_input.split()[1]   # get file name from the input
             client_lib.handle_read(filename, file_version_map, client_id)        # handle the read request 
             print("Exiting <read> mode...\n")
-            
+        
+        if "<list>" in client_input:
+            client_lib.list_files()
 
         if "<instructions>" in client_input:
             client_lib.instructions()
