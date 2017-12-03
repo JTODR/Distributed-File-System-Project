@@ -34,9 +34,12 @@ def check_mappings(filename, list_files):
 					return actual_filename + "|" + file_path + "|" + server_addr + "|" + server_port	# return string with the information on the file
 			else:
 				user_filename = row['user_filename']
-				file_row = file_row + user_filename +  "\n"
+				file_row = file_row + user_filename +  "\n"		# append filename to return string
+		if list_files == True:
+			return file_row		
+	return None 	# if file does not exist return None
 
-	return file_row		# if file does not exist return None
+	
 
 
 def main():
@@ -61,6 +64,8 @@ def main():
 			print("\n")
 		else:
 			response = "FILE_DOES_NOT_EXIST"
+			print("RESPONSE: \n" + response)
+			print("\n")
 
 		connectionSocket.send(response.encode())	# send the file information or non-existance message to the client
 			

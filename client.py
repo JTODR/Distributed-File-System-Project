@@ -8,7 +8,6 @@ def main():
     print ("\n")
     client_lib.instructions()
     client_id = strftime("%Y%m%d%H%M%S", gmtime())
-    #client_id = str(datetime.now())     # assign a client id, this will be used to in the locking service
     file_version_map = {}
 
     while True:
@@ -20,7 +19,10 @@ def main():
                  client_input = sys.stdin.readline()
             
             filename = client_input.split()[1]      # get the filename from the input
-            client_lib.handle_write(filename, client_id, file_version_map)    # handle the write request
+            response = client_lib.handle_write(filename, client_id, file_version_map)    # handle the write request
+            if response == False:
+                print("File unlock polling timeout...")
+                print("Try again later...")
             print ("Exiting <write> mode...\n")
             
 
@@ -33,7 +35,15 @@ def main():
             print("Exiting <read> mode...\n")
         
         if "<list>" in client_input:
-            client_lib.list_files()
+            client_socket = client_lib.create_socket()
+            client_lib.send_directory_service(client_socket, "", True)
+            client_socket.close()
+
+        #if "<create>" in client_input:
+        #    while not client_lib.check_valid_input(client_input):       # error check the input
+        #         client_input = sys.stdin.readline()
+        #    filename = client_input.split()[1]
+        #    client_lib.create_file(filename)
 
         if "<instructions>" in client_input:
             client_lib.instructions()

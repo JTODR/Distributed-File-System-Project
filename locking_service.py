@@ -26,6 +26,7 @@ def main():
 	filepath_locked_map = {}
 	filepath_clients_map = defaultdict(list)
 	waiting_client = False
+	client_timeout_map = {}
 
 
 	while 1:
@@ -39,6 +40,7 @@ def main():
 			client_id = recv_msg.split("_1_:")[0]
 			file_path = recv_msg.split("_1_:")[1]
 			waiting_client = False
+
 
 			unlocked = check_if_unlocked(file_path, filepath_locked_map)
 			if unlocked == True:
@@ -64,17 +66,34 @@ def main():
 			else:				# if the file is locked
 				grant_message = "file_not_granted"
 
-				if file_path in filepath_clients_map:						
-					for file_path,values in filepath_clients_map.items():	# find the current file path in the map
-						for v in values:							# iterate though the clients waiting on this file path
-							if v == client_id:					# check if client is already waiting on the file
-								waiting_client = True			# if already waiting, set flag - so client is not added to waiting list multiple times for the file path
-				
-				if waiting_client == False:			# if not already waiting
-					filepath_clients_map[file_path].append(client_id)	# append client to lists of clients waiting for the file
+				if client_id in client_timeout_map:		# check if first time requesting file
+					client_timeout_map[client_id] = client_timeout_map[client_id] + 1		# if first time, set timeout value to 0
+					print("TIME: " + str(client_timeout_map[client_id]))
+				else:
+					client_timeout_map[client_id] = 0	# if not first time, increment timeout value of client
 
-				print("SENT: " + grant_message + client_id)
-				connectionSocket.send(grant_message.encode())	# send file not granted message
+
+				if client_timeout_map[client_id] == 100:	# if client polled 100 times (10 sec), send timeout
+					timeout_msg = "TIMEOUT"
+					for file_path,values in filepath_clients_map.items():	# find the current file path in the map
+						for v in values:									# iterate though the clients waiting on this file path
+							if v == client_id:		# if the client is the first client waiting
+								filepath_clients_map[file_path].remove(v)	# remove it from the waiting list
+					del client_timeout_map[client_id]			# remove client from timeout map
+					connectionSocket.send(timeout_msg.encode())	# send timeout msg
+				else:
+
+					if file_path in filepath_clients_map:						
+						for file_path,values in filepath_clients_map.items():	# find the current file path in the map
+							for v in values:							# iterate though the clients waiting on this file path
+								if v == client_id:					# check if client is already waiting on the file
+									waiting_client = True			# if already waiting, set flag - so client is not added to waiting list multiple times for the file path
+					
+					if waiting_client == False:			# if not already waiting
+						filepath_clients_map[file_path].append(client_id)	# append client to lists of clients waiting for the file
+
+					print("SENT: " + grant_message + client_id)
+					connectionSocket.send(grant_message.encode())	# send file not granted message
 
 		elif "_2_:" in recv_msg:		# if unlock message (_2_) received 
 			client_id = recv_msg.split("_2_:")[0]

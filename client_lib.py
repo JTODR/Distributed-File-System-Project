@@ -63,18 +63,7 @@ def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW,
     return True     # went to cache
 
 
-def look_for_DS(client_socket, filename):
-    serverName = 'localhost'
-    serverPort = 9090   # port of directory service
-    client_socket.connect((serverName,serverPort))
 
-    # send the string requesting file info to directory service
-    client_socket.send(filename.encode())
-    reply = client_socket.recv(1024)
-    reply = reply.decode()
-
-    #print (reply)
-    return reply
 
 def lock_unlock_file(client_socket, client_id, file_path, lock_or_unlock):
 
@@ -97,7 +86,7 @@ def lock_unlock_file(client_socket, client_id, file_path, lock_or_unlock):
 def handle_write(filename, client_id, file_version_map):
     # ------ INFO FROM DS ------
     client_socket = create_socket()  # create socket to directory service
-    reply_DS = look_for_DS(client_socket, filename)  # request the file info from directory service
+    reply_DS = send_directory_service(client_socket, filename, False)  # request the file info from directory service
     client_socket.close()   # close the connection 
 
     if reply_DS == "FILE_DOES_NOT_EXIST":
@@ -114,12 +103,18 @@ def handle_write(filename, client_id, file_version_map):
         client_socket = create_socket()
         grant_lock = lock_unlock_file(client_socket, client_id, file_path, "lock")
         client_socket.close()
+
         while grant_lock != "file_granted":
             print("File not granted, polling again...")
             client_socket = create_socket()
             grant_lock = lock_unlock_file(client_socket, client_id, file_path, "lock")
             client_socket.close()
-            time.sleep(0.1)     # wait 0.5 sec if lock not available and request it again
+
+            if grant_lock == "TIMEOUT":     # if timeout message received from locking service, break
+                return False
+
+            time.sleep(0.1)     # wait 0.1 sec if lock not available and request it again
+            #timeout_count += 1
 
         print("You are granted the file...")
 
@@ -184,7 +179,7 @@ def cache(filename_DS, write_client_input, RW, client_id):
 
 def handle_read(filename, file_version_map, client_id):
     client_socket = create_socket()  # create socket to directory service
-    reply_DS = look_for_DS(client_socket, filename)  # send file name to directory service
+    reply_DS = send_directory_service(client_socket, filename, False)  # send file name to directory service
     client_socket.close()   # close directory service connection
 
     if reply_DS == "FILE_DOES_NOT_EXIST":
@@ -214,20 +209,42 @@ def handle_read(filename, file_version_map, client_id):
                 print (filename_DS + " successfully cached...")
 
 
-def list_files():
+#def list_files():
+#    serverPort = 9090   # port of directory service
+#    client_socket = create_socket()
+#    client_socket.connect((serverName,serverPort))
+#
+#  msg = "LIST"
+ #   # send the string requesting file info to directory service
+  #  client_socket.send(msg.encode())
+   # reply = client_socket.recv(1024)
+    #reply = reply.decode()
+    #client_socket.close()
+    #print ("Listing files on directory server...")
+    #print (reply)
+
+def send_directory_service(client_socket, filename, list_files):
     serverName = 'localhost'
     serverPort = 9090   # port of directory service
-    client_socket = create_socket()
     client_socket.connect((serverName,serverPort))
 
-    msg = "LIST"
-    # send the string requesting file info to directory service
-    client_socket.send(msg.encode())
-    reply = client_socket.recv(1024)
-    reply = reply.decode()
-    client_socket.close()
-    print ("Listing files on directory server...")
-    print (reply)
+    if not list_files:
+        # send the string requesting file info to directory send_directory_service
+        client_socket.send(filename.encode())
+        reply = client_socket.recv(1024)
+        reply = reply.decode()
+    else:
+        msg = "LIST"
+        # send the string requesting file info to directory service
+        client_socket.send(msg.encode())
+        reply = client_socket.recv(1024)
+        reply = reply.decode()
+        client_socket.close()
+        print ("Listing files on directory server...")
+        print (reply)
+
+    #print (reply)
+    return reply
 
 def instructions():
     # instructions to the user
