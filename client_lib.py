@@ -4,6 +4,8 @@ import os
 import time
 import os.path
 
+curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
+
 
 def create_socket():
     s = socket(AF_INET, SOCK_STREAM)
@@ -28,17 +30,25 @@ def send_write(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW
 def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, file_path , RW, file_version_map, msg, filename_DS, client_id):
     if file_path not in file_version_map:
         file_version_map[file_path] = 0
-        print("File is empty...")
-        return True
+        #print("File is empty...")
+        print(fileserverIP_DS)
+        print(fileserverPORT_DS)
+        print("REQUESTING FILE FROM FILE SERVER - FILE NOT EXIST")
+        send_msg = file_path + "|" + RW + "|" + msg    
+        client_socket.connect((fileserverIP_DS,fileserverPORT_DS))
+        client_socket.send(send_msg.encode())
+        return False
 
-    send_msg = "CHECK_VERSION|" + file_path
-    client_socket1 = create_socket()
-    client_socket1.connect((fileserverIP_DS,fileserverPORT_DS))
-    client_socket1.send(send_msg.encode())
-    print ("Checking version...")
-    version_FS = client_socket1.recv(1024)    # receive file server version number
-    version_FS = version_FS.decode()
-    client_socket1.close()
+    cache_file = curr_path + "\\client_cache" + client_id + "\\" + filename_DS  
+    if os.path.exists(cache_file) == True:
+        send_msg = "CHECK_VERSION|" + file_path
+        client_socket1 = create_socket()
+        client_socket1.connect((fileserverIP_DS,fileserverPORT_DS))
+        client_socket1.send(send_msg.encode())
+        print ("Checking version...")
+        version_FS = client_socket1.recv(1024)    # receive file server version number
+        version_FS = version_FS.decode()
+        client_socket1.close()
 
     if version_FS != str(file_version_map[file_path]):
         print("Versions do not match...")
@@ -86,7 +96,7 @@ def lock_unlock_file(client_socket, client_id, file_path, lock_or_unlock):
 def handle_write(filename, client_id, file_version_map):
     # ------ INFO FROM DS ------
     client_socket = create_socket()  # create socket to directory service
-    reply_DS = send_directory_service(client_socket, filename, False)  # request the file info from directory service
+    reply_DS = send_directory_service(client_socket, filename, 'w', False)  # request the file info from directory service
     client_socket.close()   # close the connection 
 
     if reply_DS == "FILE_DOES_NOT_EXIST":
@@ -161,7 +171,7 @@ def handle_write(filename, client_id, file_version_map):
         return True
 
 def cache(filename_DS, write_client_input, RW, client_id):
-    curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
+    #curr_path = os.path.dirname(os.path.realpath(sys.argv[0]))      # get path of current program (client.py)
     cache_file = curr_path + "\\client_cache" + client_id + "\\" + filename_DS       # append the cache folder and filename to the path
     
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)         # create the directory/file
@@ -179,7 +189,7 @@ def cache(filename_DS, write_client_input, RW, client_id):
 
 def handle_read(filename, file_version_map, client_id):
     client_socket = create_socket()  # create socket to directory service
-    reply_DS = send_directory_service(client_socket, filename, False)  # send file name to directory service
+    reply_DS = send_directory_service(client_socket, filename, 'r', False)  # send file name to directory service
     client_socket.close()   # close directory service connection
 
     if reply_DS == "FILE_DOES_NOT_EXIST":
@@ -209,28 +219,15 @@ def handle_read(filename, file_version_map, client_id):
                 print (filename_DS + " successfully cached...")
 
 
-#def list_files():
-#    serverPort = 9090   # port of directory service
-#    client_socket = create_socket()
-#    client_socket.connect((serverName,serverPort))
-#
-#  msg = "LIST"
- #   # send the string requesting file info to directory service
-  #  client_socket.send(msg.encode())
-   # reply = client_socket.recv(1024)
-    #reply = reply.decode()
-    #client_socket.close()
-    #print ("Listing files on directory server...")
-    #print (reply)
-
-def send_directory_service(client_socket, filename, list_files):
+def send_directory_service(client_socket, filename, RW, list_files):
     serverName = 'localhost'
     serverPort = 9090   # port of directory service
     client_socket.connect((serverName,serverPort))
 
     if not list_files:
+        msg = filename + '|' + RW
         # send the string requesting file info to directory send_directory_service
-        client_socket.send(filename.encode())
+        client_socket.send(msg.encode())
         reply = client_socket.recv(1024)
         reply = reply.decode()
     else:

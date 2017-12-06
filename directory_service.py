@@ -9,7 +9,15 @@ serverSocket.bind(('localhost', serverPort))
 serverSocket.listen(10)
 print ('DIRECTORY SERVICE is ready to receive...')
 
-def check_mappings(filename, list_files):
+def check_mappings(client_msg, list_files):
+
+	filename = client_msg.split('|')[0]
+	RW = client_msg.split('|')[1]
+	# ------ REPLICATION ------
+	#if RW == 'w':
+		#server_addr = 'localhost'	# IP of fileserverA (which holds primary copy to write to)
+		#server_port = 12001			# PORT number of fileserverA (which holds primary copy to write to)
+	#	return actual_filename + "|" + file_path + "|" + server_addr + "|" + server_port	# return string with the information on the file
 
 	with open("file_mappings.csv",'rt') as infile:        # open the .csv file storing the mappings
 		d_reader = csv.DictReader(infile, delimiter=',')    # read file as a csv file, taking values after commas
@@ -19,8 +27,13 @@ def check_mappings(filename, list_files):
 			if list_files == False:
 				# use the dictionary reader to read the values of the cells at the current row
 				user_filename = row['user_filename']
+				primary_copy = row['primary']
 
-				if user_filename == filename:		# check if file inputted by the user exists	(eg. file123)
+				print("Filename = " + filename)
+				print("RW = " + RW)
+
+				if user_filename == filename and RW == 'w':		# check if file inputted by the user exists	(eg. file123)
+					print("WRITING")
 					actual_filename = row['actual_filename']	# get actual filename (eg. file123.txt)
 					file_path = row['path']						# get the path to this file
 					server_addr = row['server_addr']			# get the file's file server IP address
@@ -32,6 +45,21 @@ def check_mappings(filename, list_files):
 					print("server_port: " + server_port)
 
 					return actual_filename + "|" + file_path + "|" + server_addr + "|" + server_port	# return string with the information on the file
+
+				elif user_filename == filename and RW == 'r' and primary_copy == 'no':
+					print("READING")
+					actual_filename = row['actual_filename']	# get actual filename (eg. file123.txt)
+					file_path = row['path']						# get the path to this file
+					server_addr = row['server_addr']			# get the file's file server IP address
+					server_port = row['server_port']			# get the file's file server PORT number
+
+					print("actual_filename: " + actual_filename)
+					print("file_path: " + file_path)
+					print("server_addr: " + server_addr)
+					print("server_port: " + server_port)
+
+					return actual_filename + "|" + file_path + "|" + server_addr + "|" + server_port	# return string with the information on the file
+
 			else:
 				user_filename = row['user_filename']
 				file_row = file_row + user_filename +  "\n"		# append filename to return string
