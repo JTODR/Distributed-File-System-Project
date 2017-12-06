@@ -2,7 +2,7 @@
 from socket import *
 
 server_addr = "localhost"
-server_port = 12003
+server_port = 12002
 server_socket = socket(AF_INET,SOCK_STREAM)
 server_socket.bind((server_addr, server_port))
 server_socket.listen(10)
@@ -13,7 +13,9 @@ def read_write(filepath, RW, text, file_version_map):
 		try:
 			file = open(filepath, RW)	
 			text_in_file = file.read()		# read the file's text into a string
-			return (text_in_file, file_version_map[filepath])			
+			if filepath not in file_version_map:
+				file_version_map[filepath] = 0
+			return text_in_file#, file_version_map[filepath])			
 		except IOError:				# IOError occurs when open(filepath,RW) cannot find the file requested
 			print (filepath + " does not exist in directory\n")
 			return (IOError, -1)
@@ -29,22 +31,23 @@ def read_write(filepath, RW, text, file_version_map):
 		file = open(filepath, RW)
 		file.write(text)
 		print("FILE_VERSION: " + str(file_version_map[filepath]))
-		return ("Success", file_version_map[filepath])
+		return "Success"#, file_version_map[filepath])
 
 
 def send_client_reply(response, RW, connection_socket):
 
-	if response[0] == "Success":
-		reply = "File successfully written to..." + str(response[1])
-		print("Sending file version " + str(response[1]))
+	if response == "Success":
+		reply = "File successfully written to..."# + str(response[1])
+
+		#print("Sending file version " + str(response[1]))
 		connection_socket.send(reply.encode())
 		#print ("Sent: " + reply)
 
-	elif response[0] is not IOError and RW == "r":
-		connection_socket.send(response[0].encode())
+	elif response is not IOError and RW == "r":
+		connection_socket.send(response.encode())
 		#print ("Sent: " + reply)
 
-	elif response[0] is IOError: 
+	elif response is IOError: 
 		reply = "File does not exist\n"
 		connection_socket.send(reply.encode())
 		#print ("Sent: " + reply)
