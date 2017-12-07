@@ -1,19 +1,19 @@
-user_filename,actual_filename,path,server_addr,server_port,primary
-file1,file1.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverA,localhost,12001,yes
-file2,file2.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverA,localhost,12001,yes
-file3,file3.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverA,localhost,12001,yes
-file4,file4.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverA,localhost,12001,yes
-file5,file5.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverA,localhost,12001,yes
-file6,file6.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverA,localhost,12001,yes
-file1,file1.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverB,localhost,12002,no
-file2,file2.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverB,localhost,12002,no
-file3,file3.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverB,localhost,12002,no
-file4,file4.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverB,localhost,12002,no
-file5,file5.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverB,localhost,12002,no
-file6,file6.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverB,localhost,12002,no
-file1,file1.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverC,localhost,12003,no
-file2,file2.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverC,localhost,12003,no
-file3,file3.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverC,localhost,12003,no
-file4,file4.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverC,localhost,12003,no
-file5,file5.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverC,localhost,12003,no
-file6,file6.txt,C:\Users\Joseph\Documents\College\4th Year\CS4400_IntApps\File_System_Project\github_repo\fileserverC,localhost,12003,no
+user_filename,actual_filename,server_addr,server_port,primary
+file1,file1.txt,localhost,12001,yes
+file2,file2.txt,localhost,12001,yes
+file3,file3.txt,localhost,12001,yes
+file4,file4.txt,localhost,12001,yes
+file5,file5.txt,localhost,12001,yes
+file6,file6.txt,localhost,12001,yes
+file1,file1.txt,localhost,12002,no
+file2,file2.txt,localhost,12002,no
+file3,file3.txt,localhost,12002,no
+file4,file4.txt,localhost,12002,no
+file5,file5.txt,localhost,12002,no
+file6,file6.txt,localhost,12002,no
+file1,file1.txt,localhost,12003,no
+file2,file2.txt,localhost,12003,no
+file3,file3.txt,localhost,12003,no
+file4,file4.txt,localhost,12003,no
+file5,file5.txt,localhost,12003,no
+file6,file6.txt,localhost,12003,no
