@@ -9,7 +9,7 @@ server_socket.listen(10)
 print ('FILE SERVER is ready to receive...')
 
 
-def replicate(connection_socket, filename):
+def replicate(filename):
 
 	f = open(filename, 'r')
 	text = f.read()
@@ -23,12 +23,15 @@ def replicate(connection_socket, filename):
 	replicate_socket = socket(AF_INET, SOCK_STREAM)
 	replicate_socket.connect((server_ip,port))
 	replicate_socket.send(msg.encode())
+	replicate_socket.close()
 
-	#port = 12003
-	#server_ip = 'localhost'
-	#print("Replicating to fileserver C")
-	#client_socket.connect((server_ip,port))
-	#client_socket.send(text.encode())
+	port = 12003
+	server_ip = 'localhost'
+	print("Replicating to fileserver C")
+	replicate_socket = socket(AF_INET, SOCK_STREAM)
+	replicate_socket.connect((server_ip,port))
+	replicate_socket.send(msg.encode())
+	replicate_socket.close()
 
 
 
@@ -105,7 +108,7 @@ def main():
 			send_client_reply(response, RW, connection_socket)		# send back write successful message or send back text for client to read
 
 			if RW == 'a+':
-				replicate(connection_socket, filename)
+				replicate(filename)
 
 
 		elif "CHECK_VERSION" in recv_msg:

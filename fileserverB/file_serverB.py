@@ -69,7 +69,7 @@ def main():
 
 		#print("RECEIVED: " + recv_msg)
 
-		if recv_msg != "" and "CHECK_VERSION" and "REPLICATE|" not in recv_msg:
+		if (recv_msg != "") and ("CHECK_VERSION" not in recv_msg) and ("REPLICATE" not in recv_msg):
 			# parse the message
 
 			filename = recv_msg.split("|")[0]	# file path to perform read/write on
@@ -84,7 +84,7 @@ def main():
 
 		elif "CHECK_VERSION" in recv_msg:
 			client_filename = recv_msg.split("|")[1]			# parse the version number to check
-			print("Version check on " + client_filename)
+			print("Version check on " + client_filename + "\n")
 			if client_filename not in file_version_map:
 				file_version_map[client_filename] = 0
 			file_version = str(file_version_map[client_filename])
@@ -97,7 +97,7 @@ def main():
 			f = open(rep_filename, 'w')
 			f.write(rep_text)
 			f.close()
-			print(rep_filename + " successfully replicated...")
+			print(rep_filename + " successfully replicated...\n")
 
 
 	connection_socket.close()

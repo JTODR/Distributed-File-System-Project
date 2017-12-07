@@ -33,7 +33,7 @@ def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, filename , RW, 
         #print("File is empty...")
         print(fileserverIP_DS)
         print(fileserverPORT_DS)
-        print("REQUESTING FILE FROM FILE SERVER - FILE NOT EXIST")
+        print("REQUESTING FILE FROM FILE SERVER - FILE NOT IN CACHE")
         send_msg = filename + "|" + RW + "|" + msg    
         client_socket.connect((fileserverIP_DS,fileserverPORT_DS))
         client_socket.send(send_msg.encode())
