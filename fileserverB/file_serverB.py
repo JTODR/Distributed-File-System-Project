@@ -69,7 +69,7 @@ def main():
 
 		#print("RECEIVED: " + recv_msg)
 
-		if recv_msg != "" and "CHECK_VERSION" not in recv_msg:
+		if recv_msg != "" and "CHECK_VERSION" and "REPLICATE|" not in recv_msg:
 			# parse the message
 
 			filename = recv_msg.split("|")[0]	# file path to perform read/write on
@@ -82,9 +82,6 @@ def main():
 			response = read_write(filename, RW, text, file_version_map)	# perform the read/write and check if successful
 			send_client_reply(response, RW, connection_socket)		# send back write successful message or send back text for client to read
 
-			if RW == 'w':
-				repliate(connection_socket, text)
-
 		elif "CHECK_VERSION" in recv_msg:
 			client_filename = recv_msg.split("|")[1]			# parse the version number to check
 			print("Version check on " + client_filename)
@@ -92,6 +89,15 @@ def main():
 				file_version_map[client_filename] = 0
 			file_version = str(file_version_map[client_filename])
 			connection_socket.send(file_version.encode())
+
+		elif "REPLICATE|" in recv_msg:
+			rep_filename = recv_msg.split("|")[1]
+			rep_text = recv_msg.split("|")[2]
+
+			f = open(rep_filename, 'w')
+			f.write(rep_text)
+			f.close()
+			print(rep_filename + " successfully replicated...")
 
 
 	connection_socket.close()

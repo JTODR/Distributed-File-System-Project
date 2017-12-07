@@ -9,20 +9,26 @@ server_socket.listen(10)
 print ('FILE SERVER is ready to receive...')
 
 
-def replicate(connection_socket, text):
+def replicate(connection_socket, filename):
+
+	f = open(filename, 'r')
+	text = f.read()
+	f.close()
+
+	msg = "REPLICATE|" + filename + "|" + text
 
 	port = 12002
 	server_ip = 'localhost'
 	print("Replicating to fileserver B")
-	msg = "RE"
-	client_socket.connect((server_ip,port))
-	client_socket.send(text.encode())
+	replicate_socket = socket(AF_INET, SOCK_STREAM)
+	replicate_socket.connect((server_ip,port))
+	replicate_socket.send(msg.encode())
 
-	port = 12003
-	server_ip = 'localhost'
-	print("Replicating to fileserver C")
-	client_socket.connect((server_ip,port))
-	client_socket.send(text.encode())
+	#port = 12003
+	#server_ip = 'localhost'
+	#print("Replicating to fileserver C")
+	#client_socket.connect((server_ip,port))
+	#client_socket.send(text.encode())
 
 
 
@@ -49,8 +55,7 @@ def read_write(filename, RW, text, file_version_map):
 		file = open(filename, RW)
 		file.write(text)
 
-		#replicate(text)
-
+		
 		print("FILE_VERSION: " + str(file_version_map[filename]))
 		return ("Success", file_version_map[filename])
 
@@ -99,8 +104,9 @@ def main():
 			response = read_write(filename, RW, text, file_version_map)	# perform the read/write and check if successful
 			send_client_reply(response, RW, connection_socket)		# send back write successful message or send back text for client to read
 
-			if RW == 'w':
-				repliate(connection_socket, text)
+			if RW == 'a+':
+				replicate(connection_socket, filename)
+
 
 		elif "CHECK_VERSION" in recv_msg:
 			client_filename = recv_msg.split("|")[1]			# parse the version number to check
