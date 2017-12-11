@@ -237,7 +237,7 @@ def instructions():
     print ("------------------- INSTRUCTIONS ----------------------")
     print ("<write> [filename] - write to file mode")
     print ("<end> - finish writing")
-    print ("<read> [filename] - read a file in your current directory")
+    print ("<read> [filename] - read from file mode")
     print ("<list> - lists all existing files")
     print ("<instructions> - lets you see the instructions again")
     print ("<quit> - exits the application")
