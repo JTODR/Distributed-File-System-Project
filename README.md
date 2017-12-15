@@ -17,6 +17,54 @@ To run this project, do the following:
 * Run fileserver B in a separate directory - fileserver B only takes read requests: **python fileserverB.py**
 * Run fileserver C in a separate directory - fileserver C (like fileserver B) only takes read requests: **python fileserverC.py**
 
+## Example Usage
+
+Open 2 clients in separate terminals.
+
+* Client 1 write:
+
+```
+$<write> file1
+You are granted the file...
+Write some text...
+<end> to finish writing
+--------------------------------
+$Hello world!
+$<end>
+--------------------------------
+Sending version: 0
+File successfully written to
+File unlocked...
+Exiting <write> mode...
+
+```
+
+* Client 1 read:
+
+```
+$<read> file1
+Checking version...
+Versions match, reading from cache...
+--------------------------------
+Hello world!
+
+--------------------------------
+Exiting <read> mode...
+```
+
+* Client 2 read: 
+
+```
+$<read> file1
+REQUESTING FILE FROM FILE SERVER - FILE NOT IN CACHE
+--------------------------------
+Hello world!
+
+--------------------------------
+file1.txt successfully cached...
+Exiting <read> mode...
+```
+
 ## Project Overview
 This project simulates a distributed file system using the NFS protocol.
 It can support multiple clients accessing files.
@@ -36,12 +84,12 @@ Clients can read from and write to files on fileservers. The client side applica
 
 The client can use the following commands to access files:
 
-    <write> [filename] 	# write to file mode
-    <end> 			# finish writing
-    <read> [filename] 	# read from file mode
-    <list> 			# lists all existing files
-    <instructions> 		# lets you see the instructions 
-    <quit> 			# exits the application
+	<write> [filename]  # write to file mode
+	<end>           # finish writing
+	<read> [filename]   # read from file mode
+	<list>          # lists all existing files
+	<instructions>      # lets you see the instructions 
+	<quit>          # exits the application
 
 ----
 
