@@ -19,7 +19,9 @@ To run this project, do the following:
 
 ## Example Usage
 
-Open 2 clients in separate terminals.
+* Start up the directory_service.py, the locking_service.py and the three fileservers all in separate terminals. Fileserver A, fileserver B and fileserver c must exist in their own separate folders/ directories.
+
+* Open 2 clients in separate terminals.
 
 * Client 1 write:
 
