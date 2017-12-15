@@ -1,5 +1,6 @@
 # file server
 from socket import *
+import os
 
 server_addr = "localhost"
 server_port = 12002
@@ -8,19 +9,21 @@ server_socket.bind((server_addr, server_port))
 server_socket.listen(10)
 print ('FILE SERVER is ready to receive...')
 
+file_version_map = {}
+
 
 def read_write(filename, RW, text, file_version_map):
 	if RW == "r":	# if read request
-		try:
+		if os.stat(filename).st_size != 0:
 			file = open(filename, RW)	
 			text_in_file = file.read()		# read the file's text into a string
 			if filename not in file_version_map:
 				file_version_map[filename] = 0
-			return (text_in_file, file_version_map[filename])			
-		except IOError:				# IOError occurs when open(filepath,RW) cannot find the file requested
-			print (filename + " does not exist in directory\n")
-			return (IOError, -1)
-			pass
+			return (text_in_file, file_version_map[filename])
+		else:
+			empty_msg = "EMPTY_FILE"
+			return (empty_msg, -1)			
+
 
 	elif RW == "a+":	# if write request
 
@@ -47,18 +50,18 @@ def send_client_reply(response, RW, connection_socket):
 		connection_socket.send(reply.encode())
 		#print ("Sent: " + reply)
 
-	elif response[0] is not IOError and RW == "r":
+	elif response[1] != -1 and RW == "r":
 		connection_socket.send(response[0].encode())
 		#print ("Sent: " + reply)
 
-	elif response[0] is IOError: 
-		reply = "File does not exist\n"
+	elif response[1] == -1: 
+		reply = response[0]
 		connection_socket.send(reply.encode())
 		#print ("Sent: " + reply)
 	
 def main():
 
-	file_version_map = {}
+	
 
 	while 1:
 		response = ""
@@ -93,6 +96,9 @@ def main():
 		elif "REPLICATE|" in recv_msg:
 			rep_filename = recv_msg.split("|")[1]
 			rep_text = recv_msg.split("|")[2]
+			rep_version = recv_msg.split("|")[3]
+
+			file_version_map[rep_filename] = int(rep_version)
 
 			f = open(rep_filename, 'w')
 			f.write(rep_text)

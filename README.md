@@ -32,16 +32,16 @@ The following are the main components of the file system:
 
 **Distributed transparent file access**
 
-Clients can read and write to files on fileservers. The client side application is a text editor and viewer. The client application's functionality comes from the client library (client_lib.py). The client never downloads or uploads a file from a fileserver, it downloads or uploads the contents of the file. 
+Clients can read from and write to files on fileservers. The client side application is a text editor and viewer. The client application's functionality comes from the client library (client_lib.py). The client never downloads or uploads a file from a fileserver, it downloads or uploads the contents of the file. 
 
 The client can use the following commands to access files:
 
-* <write> [filename] - write to file mode
-* <end> - finish writing
-* <read> [filename] - read from file mode
-* <list> - lists all existing files
-* <instructions> - lets you see the instructions 
-* <quit> - exits the application
+    <write> [filename] 	# write to file mode
+    <end> 			# finish writing
+    <read> [filename] 	# read from file mode
+    <list> 			# lists all existing files
+    <instructions> 		# lets you see the instructions 
+    <quit> 			# exits the application
 
 ----
 

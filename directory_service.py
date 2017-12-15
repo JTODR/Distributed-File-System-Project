@@ -24,9 +24,6 @@ def check_mappings(client_msg, list_files):
 				user_filename = row['user_filename']
 				primary_copy = row['primary']
 
-				print("Filename = " + filename)
-				print("RW = " + RW)
-
 				if user_filename == filename and RW == 'w':		# check if file inputted by the user exists	(eg. file123)
 					print("WRITING")
 					actual_filename = row['actual_filename']	# get actual filename (eg. file123.txt)
@@ -66,8 +63,6 @@ def main():
 		response = ""
 		recv_msg = connectionSocket.recv(1024)
 		recv_msg = recv_msg.decode()
-
-		#print("RECEIVED: " + filename)
 
 		if "LIST" not in recv_msg:
 			response = check_mappings(recv_msg, False)		# check the mappings for the file

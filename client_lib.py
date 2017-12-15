@@ -30,9 +30,6 @@ def send_write(client_socket, fileserverIP_DS, fileserverPORT_DS, filename , RW,
 def send_read(client_socket, fileserverIP_DS, fileserverPORT_DS, filename , RW, file_version_map, msg, filename_DS, client_id):
     if filename not in file_version_map:
         file_version_map[filename] = 0
-        #print("File is empty...")
-        print(fileserverIP_DS)
-        print(fileserverPORT_DS)
         print("REQUESTING FILE FROM FILE SERVER - FILE NOT IN CACHE")
         send_msg = filename + "|" + RW + "|" + msg    
         client_socket.connect((fileserverIP_DS,fileserverPORT_DS))
@@ -199,13 +196,16 @@ def handle_read(filename, file_version_map, client_id):
             reply_FS = reply_FS.decode()
             client_socket.close()
 
-            if reply_FS != "File does not exist\n":
+            if reply_FS != "EMPTY_FILE":
                 print_breaker()
                 print (reply_FS)
                 print_breaker()
 
                 cache(filename_DS, reply_FS, "w", client_id)  # update the cached file with the new version from the file server
                 print (filename_DS + " successfully cached...")
+            else:
+                print(filename_DS + " is empty...")
+                del file_version_map[filename_DS]
 
 
 def send_directory_service(client_socket, filename, RW, list_files):
